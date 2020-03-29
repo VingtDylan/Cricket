@@ -1,0 +1,5 @@
+configurations.maybeCreate("default")
+artifacts.add("default", file('commons-io-2.6.jar'))
+dependencies {
+    compile files('commons-io-2.6.jar')
+}
