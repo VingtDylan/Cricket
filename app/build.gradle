@@ -4,6 +4,7 @@ android {
     compileSdkVersion 25
     buildToolsVersion "28.0.3"
     defaultConfig {
+        applicationId "cn.edu.nju.cyh.Cricket"
         minSdkVersion 15
         targetSdkVersion 25
         versionCode 1

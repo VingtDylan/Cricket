@@ -1,4 +1,4 @@
-package cn.edu.nju.wmy.getsoundtest;
+package cn.edu.nju.cyh.Cricket;
 
 import java.util.*;
 
@@ -15,8 +15,8 @@ public class Tdoa {
     private double sign = 0;
     private int size = 2000;
 
-    public double []dataL = null;
-    public double []dataR = null;
+    private double []dataL = null;
+    private double []dataR = null;
 
     public Tdoa(double []dataL,double []dataR,int size){
         this.dataL = dataL;
@@ -25,7 +25,7 @@ public class Tdoa {
         runner();
     }
 
-    public void runner(){
+    private void runner(){
         int len = dataL.length;
 
         int ed = size;

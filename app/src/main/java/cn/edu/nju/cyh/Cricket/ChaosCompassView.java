@@ -1,4 +1,4 @@
-package cn.edu.nju.wmy.getsoundtest;
+package cn.edu.nju.cyh.Cricket;
 
 import android.animation.PropertyValuesHolder;
 import android.animation.TimeInterpolator;
@@ -15,14 +15,13 @@ import android.graphics.Rect;
 import android.graphics.Shader;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 public class ChaosCompassView extends View {
     private Canvas mCanvas;
     private Context mContext;
-    //Parameters
+    //各种参数
     private int width; /*View矩形的宽度*/
     private int mCenterX;/*指南针圆心点坐标X*/
     private int mCenterY;/*指南针圆心点坐标Y*/
@@ -93,13 +92,13 @@ public class ChaosCompassView extends View {
 
     public void setVal(float val,float mdegree) {
         if(CompassCounter<1){
-            Compassbegin=val;
+            Compassbegin = val;
             CompassCounter++;
         }
-        CompassChange=val-Compassbegin;
+        CompassChange = val - Compassbegin;
         this.val = val;
         //this.mdegree=mdegree;//+CompassChange;
-        this.mdegree=mdegree+CompassChange;
+        this.mdegree = mdegree + CompassChange;
         invalidate();
     }
 
@@ -120,12 +119,10 @@ public class ChaosCompassView extends View {
         mDarkRedPaint.setAntiAlias(true);
         mDarkRedPaint.setColor(context.getResources().getColor(R.color.darkRed));
 
-
         mDeepGrayPaint = new Paint();
         mDeepGrayPaint.setStyle(Paint.Style.STROKE);
         mDeepGrayPaint.setAntiAlias(true);
         mDeepGrayPaint.setColor(context.getResources().getColor(R.color.deepGray));
-
 
         mLightGrayPaint = new Paint();
         mLightGrayPaint.setStyle(Paint.Style.FILL);
@@ -193,9 +190,7 @@ public class ChaosCompassView extends View {
 
         mCameraMatrix = new Matrix();
         mCamera = new Camera();
-
     }
-
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -254,55 +249,12 @@ public class ChaosCompassView extends View {
         GuideLine.close();
         mCanvas.drawPath(GuideLine,mGuidePaint);
 
-        //mCanvas.drawText("Data Show",0,0,mGuidePaint);
-        //text="Data show";
-
-        //text=String.valueOf(CompassChange);
-        //Log.d("TDOA","Angle: " + Compassbegin);
         text=String.valueOf(Math.signum(mdegree)*(Math.abs(mdegree)-90.0));
         mTextPaint.getTextBounds(text,0,text.length(),mTextRect);
         int mTextWidth = mTextRect.width();
         mCanvas.drawText(text,width/2-mTextWidth/2,60,mTextPaint);
-
-//        //坐标轴;
-//        //x
-//        mGuidePaint.setPathEffect(new DashPathEffect(new float[]{4,4},0));
-//        GuideLine.moveTo(50,mOutSideRadius+mTextHeight);
-//        GuideLine.lineTo(width-100,mOutSideRadius+mTextHeight);
-//        GuideLine.close();
-//        mGuidePaint.setColor(Color.rgb(128,0,128));
-//        mCanvas.drawPath(GuideLine,mGuidePaint);
-//        //y
-//        mTriangleHeight=30;
-//        GuideLine.moveTo(width/2,mOutSideRadius-mTextHeight+170-mTriangleHeight);
-//        mTriangleSide = 36.18f;
-//        GuideLine.lineTo(width/2-mTriangleSide/2,mOutSideRadius-mTextHeight+170);
-//        GuideLine.lineTo(width/2+mTriangleSide/2,mOutSideRadius-mTextHeight+170);
-//        GuideLine.close();
-//        mCanvas.drawPath(GuideLine,mGuidePaint);
-//        GuideLine.moveTo(width/2,mOutSideRadius+mTextHeight*2+30);
-//        GuideLine.lineTo(width/2,mOutSideRadius-mTextHeight+170);
-//        GuideLine.close();
-//        mGuidePaint.setColor(Color.rgb(128,0,128));
-//        mCanvas.drawPath(GuideLine,mGuidePaint);
-
         mCanvas.restore();
     }
-    /*
-    public double[] rotateVec(int px,int py,double ang,boolean isChLen,double newLen) {
-        double mathstr[] = new double[2];
-        // 矢量旋转函数，参数含义分别是x分量、y分量、旋转角、是否改变长度、新长度
-        double vx = px * Math.cos(ang) - py * Math.sin(ang);
-        double vy = px * Math.sin(ang) + py * Math.cos(ang);
-        if (isChLen) {
-            double d = Math.sqrt(vx * vx + vy * vy);
-            vx = vx / d * newLen;
-            vy = vy / d * newLen;
-            mathstr[0] = vx;
-            mathstr[1] = vy;
-        }
-        return mathstr;
-    }*/
 
     /**
      * 设置camera相关
@@ -322,6 +274,9 @@ public class ChaosCompassView extends View {
         mCanvas.concat(mCameraMatrix);
     }
 
+    /**
+     * 画内部圈
+     */
     private void drawInnerCricle() {
         mInnerShader = new RadialGradient(width/2,mOutSideRadius+mTextHeight,mCircumRadius-40, Color.parseColor("#323232"),
                 Color.parseColor("#000000"), Shader.TileMode.CLAMP);
@@ -330,6 +285,9 @@ public class ChaosCompassView extends View {
 
     }
 
+    /**
+     * 中心文字
+     */
     private void drawCenterText() {
         String centerText= String.valueOf((int) val+"°");
         mCenterPaint.getTextBounds(centerText,0,centerText.length(),mCenterTextRect);
@@ -339,6 +297,9 @@ public class ChaosCompassView extends View {
 
     }
 
+    /**
+     * 刻度线等
+     */
     private void drawCompassDegreeScale() {
         mCanvas.save();
         //获取N文字的宽度
@@ -465,6 +426,9 @@ public class ChaosCompassView extends View {
         mCanvas.restore();
     }
 
+    /**
+     * 方向文字
+     */
     private void drawText() {
         if (val<=15||val>=345){
             text = "北";

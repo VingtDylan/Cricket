@@ -1,4 +1,4 @@
-package cn.edu.nju.wmy.getsoundtest;
+package cn.edu.nju.cyh.Cricket;
 
 import org.junit.Test;
 

@@ -6,12 +6,11 @@
     android:layout_height="match_parent"
     android:padding="2dp"
     android:orientation="vertical"
-    tools:context="cn.edu.nju.wmy.getsoundtest.MainActivity">
+    tools:context="cn.edu.nju.cyh.Cricket.MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="3"
+        android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <Button
@@ -20,12 +19,45 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:layout_weight="1"
-            android:background="#50000000"
-            android:onClick="Record"
+            android:background="@color/colorPrimary"
+            android:onClick="record"
             android:padding="10dp"
             android:text="开始录音"
             android:textColor="#fff"
             android:textSize="24sp" />
+
+        <Button
+            android:id="@+id/bt_file_recorder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_weight="1"
+            android:background="@color/colorPrimary"
+            android:onClick="waveFileGenerate"
+            android:padding="10dp"
+            android:text="不产生wav"
+            android:textColor="#fff"
+            android:textSize="24sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/compass_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@color/colorPrimary"
+            android:onClick="changeUI"
+            android:padding="15dp"
+            android:text="compass"
+            android:textColor="#fff"
+            android:textSize="20sp" />
 
     </LinearLayout>
 
