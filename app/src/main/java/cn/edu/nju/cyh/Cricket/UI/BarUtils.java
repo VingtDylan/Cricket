@@ -1,4 +1,4 @@
-package cn.edu.nju.cyh.Cricket;
+package cn.edu.nju.cyh.Cricket.UI;
 
 import android.annotation.TargetApi;
 import android.app.Activity;

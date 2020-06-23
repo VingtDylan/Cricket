@@ -1,6 +1,9 @@
-package cn.edu.nju.cyh.Cricket;
+package cn.edu.nju.cyh.Cricket.Core;
 
 import java.util.*;
+
+import cn.edu.nju.cyh.Cricket.Core.Correlation;
+import cn.edu.nju.cyh.Cricket.Tools.Util;
 
 /**
  * @author : VingtDylan

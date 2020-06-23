@@ -1,4 +1,4 @@
-package cn.edu.nju.cyh.Cricket;
+package cn.edu.nju.cyh.Cricket.UI;
 
 import android.animation.PropertyValuesHolder;
 import android.animation.TimeInterpolator;
@@ -13,10 +13,13 @@ import android.graphics.Path;
 import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.Shader;
+import android.icu.text.DecimalFormat;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+
+import cn.edu.nju.cyh.Cricket.R;
 
 public class ChaosCompassView extends View {
     private Canvas mCanvas;
@@ -86,19 +89,27 @@ public class ChaosCompassView extends View {
         return val;
     }
 
-    int CompassCounter=0;
-    float Compassbegin=0;
-    float CompassChange=0;
+
+    private boolean flag = false;
+    private float preval;
 
     public void setVal(float val,float mdegree) {
-        if(CompassCounter<1){
-            Compassbegin = val;
-            CompassCounter++;
-        }
-        CompassChange = val - Compassbegin;
         this.val = val;
-        //this.mdegree=mdegree;//+CompassChange;
-        this.mdegree = mdegree + CompassChange;
+        this.mdegree = mdegree;
+        flag = false;
+        invalidate();
+    }
+
+    public void changeVal(float val, float mdegree){
+        if(flag){
+            this.mdegree = mdegree + (val - this.preval)/50.0f;
+            this.val = val;
+        }else{
+            this.val = val;
+            this.mdegree = mdegree;
+            this.preval = val;
+            flag = true;
+        }
         invalidate();
     }
 
@@ -249,7 +260,7 @@ public class ChaosCompassView extends View {
         GuideLine.close();
         mCanvas.drawPath(GuideLine,mGuidePaint);
 
-        text=String.valueOf(Math.signum(mdegree)*(Math.abs(mdegree)-90.0));
+        text = String.format("%.4f",mdegree - 90.0f);
         mTextPaint.getTextBounds(text,0,text.length(),mTextRect);
         int mTextWidth = mTextRect.width();
         mCanvas.drawText(text,width/2-mTextWidth/2,60,mTextPaint);
@@ -430,7 +441,7 @@ public class ChaosCompassView extends View {
      * 方向文字
      */
     private void drawText() {
-        if (val<=15||val>=345){
+        if (val<=15&&val>=-15){
             text = "北";
         }else if (val>15&&val<=75){
             text= "东北";
@@ -438,13 +449,13 @@ public class ChaosCompassView extends View {
             text= "东";
         }else if (val>105&&val<=165){
             text="东南";
-        }else if (val>165&&val<=195){
+        }else if (val>165||val<=-165){
             text = "南";
-        }else if (val>195&&val<=255){
+        }else if (val>-165&&val<=-105){
             text = "西南";
-        }else if (val>255&&val<=285){
+        }else if (val>-105&&val<=-75){
             text = "西";
-        }else if (val>285&&val<345){
+        }else if (val>-75&&val<-15){
             text="西北";
         }
 

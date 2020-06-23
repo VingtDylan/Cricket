@@ -1,4 +1,4 @@
-package cn.edu.nju.cyh.Cricket;
+package cn.edu.nju.cyh.Cricket.UI;
 
 /**
  * Created by ASUS on 2020/3/18.

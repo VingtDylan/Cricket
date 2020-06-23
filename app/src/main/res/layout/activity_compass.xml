@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
-    tools:context="cn.edu.nju.cyh.Cricket.CompassActivity">
-    <cn.edu.nju.cyh.Cricket.ChaosCompassView
+    tools:context="cn.edu.nju.cyh.Cricket.Activity.CompassActivity">
+    <cn.edu.nju.cyh.Cricket.UI.ChaosCompassView
         android:id="@+id/ccv"
         android:layout_centerInParent="true"
         android:background="@color/black"

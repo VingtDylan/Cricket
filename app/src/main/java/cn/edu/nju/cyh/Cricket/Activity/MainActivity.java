@@ -1,6 +1,7 @@
-package cn.edu.nju.cyh.Cricket;
+package cn.edu.nju.cyh.Cricket.Activity;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
@@ -10,8 +11,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
@@ -38,6 +37,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import cn.edu.nju.cyh.Cricket.Core.Filter;
+import cn.edu.nju.cyh.Cricket.R;
+import cn.edu.nju.cyh.Cricket.Core.Tdoa;
+import cn.edu.nju.cyh.Cricket.Tools.Util;
 
 public class MainActivity extends AppCompatActivity {
     /**
@@ -82,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 传感器
      */
-    private final float temperature = 20.0f;
+    private final float temperature = 30.0f;
     private final float vSpeed = (331.3f + 0.606f * temperature) * 100;
 
     @Override
@@ -103,7 +107,40 @@ public class MainActivity extends AppCompatActivity {
                 ActivityCompat.requestPermissions(MainActivity.this, permissions,1);
             }
         }
+        //打印传感器列表
+        getSensorList();
     }
+
+    /**
+     * 打印传感器列表
+     */
+    private void getSensorList() {
+        // 获取传感器管理器
+        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+
+        // 获取全部传感器列表
+        List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
+
+        // 打印每个传感器信息
+        /*
+        int iIndex = 1;
+        for (Sensor item : sensors) {
+            StringBuilder strLog = new StringBuilder();
+            strLog.append(iIndex + ".");
+            strLog.append("	Sensor Type - " + item.getType() + "\r\n");
+            strLog.append("	Sensor Name - " + item.getName() + "\r\n");
+            strLog.append("	Sensor Version - " + item.getVersion() + "\r\n");
+            strLog.append("	Sensor Vendor - " + item.getVendor() + "\r\n");
+            strLog.append("	Maximum Range - " + item.getMaximumRange() + "\r\n");
+            strLog.append("	Minimum Delay - " + item.getMinDelay() + "\r\n");
+            strLog.append("	Power - " + item.getPower() + "\r\n");
+            strLog.append("	Resolution - " + item.getResolution() + "\r\n");
+            strLog.append("\r\n");
+            iIndex++;
+            System.out.println(strLog.toString());
+        }*/
+    }
+
     /**
      * 初始化界面
      */
@@ -388,7 +425,7 @@ public class MainActivity extends AppCompatActivity {
                 RYD[i] = RYList.get(i);
             }
             int Unit = 400;int m = 10;
-            Filter offlineFilter = new Filter(LYD,RYD,6,44100.0,4000);
+            Filter offlineFilter = new Filter(LYD,RYD,6,44100.0,900,1100);
             offlineFilter.filter(Unit, m);
             LYD = offlineFilter.getLY();
             RYD = offlineFilter.getRY();
@@ -399,10 +436,12 @@ public class MainActivity extends AppCompatActivity {
             Log.d("TDOA","Distance: " + tdoa.getDeltaT() * 34000.0 +"cm");
             Log.d("TDOA","Distance: " + tdoa.getSign());
 
+            double d = Math.toDegrees(Math.atan(tdoa.getDeltaT() * vSpeed /16.0));
+            d = 180 - d;
             Intent intent=new Intent();
             intent.setClass(MainActivity.this,CompassActivity.class);
-            CompassActivity.mdegree = (float)(Math.signum(tdoa.getSign())*90.0 + Math.toDegrees(Math.atan(tdoa.getDeltaT() * vSpeed /16.0)));
-            Log.d("TDOA","Angle: " + Math.abs(tdoa.getSign())*90.0 + " " + Math.toDegrees(Math.atan(tdoa.getDeltaT() * vSpeed /16.0)));
+            CompassActivity.mdegree = (float)(Math.signum(tdoa.getSign())*90.0 + d);
+            Log.d("TDOA","Angle: " + Math.abs(tdoa.getSign())*90.0 + " " + d);
             Log.d("TDOA","Angle: " + CompassActivity.mdegree);
             startActivity(intent);
         }

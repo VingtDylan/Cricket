@@ -1,8 +1,9 @@
-package cn.edu.nju.cyh.Cricket;
+package cn.edu.nju.cyh.Cricket.Core;
 
 import biz.source_code.dsp.filter.FilterPassType;
 import biz.source_code.dsp.filter.IirFilterCoefficients;
 import biz.source_code.dsp.filter.IirFilterDesignExstrom;
+import cn.edu.nju.cyh.Cricket.Tools.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,28 +21,32 @@ public class Filter {
     private double []RY = null;
     private int level = 6;
     private double FS = 44100;
-    private double Fs = 4000;
+    private double Fs1 = 900;
+    private double Fs2 = 1100;
     private IirFilterCoefficients iirFilterCoefficients;
 
-    public  Filter(double []LY, double []RY, int level, double FS, double Fs){
+    public  Filter(double []LY, double []RY, int level, double FS, double Fs1,double Fs2){
         this.LY = LY;
         this.RY = RY;
         this.level = level;
         this.FS = FS;
-        this.Fs = Fs;
+        this.Fs1 = Fs1;
+        this.Fs2 = Fs2;
     }
 
     public void filter(int Unit,int m){
-        iirFilterCoefficients = IirFilterDesignExstrom.design(FilterPassType.highpass,this.level,this.Fs/this.FS,this.Fs/this.FS);
-        /*
+        iirFilterCoefficients = IirFilterDesignExstrom.design(FilterPassType.highpass,this.level,this.Fs1/this.FS,this.Fs1/this.FS);
+        this.LY = IIRFilter(this.LY, iirFilterCoefficients.a, iirFilterCoefficients.b);
+        this.RY = IIRFilter(this.RY, iirFilterCoefficients.a, iirFilterCoefficients.b);
+        iirFilterCoefficients = IirFilterDesignExstrom.design(FilterPassType.lowpass,this.level,this.Fs2/this.FS,this.Fs2/this.FS);
+        this.LY = IIRFilter(this.LY, iirFilterCoefficients.a, iirFilterCoefficients.b);
+        this.RY = IIRFilter(this.RY, iirFilterCoefficients.a, iirFilterCoefficients.b);
         for (int i=0;i<iirFilterCoefficients.a.length;i++) {
             System.out.println("A["+i+"]:"+iirFilterCoefficients.a[i]);
         }
         for (int i=0;i<iirFilterCoefficients.b.length;i++) {
             System.out.println("B["+i+"]:"+iirFilterCoefficients.b[i]);
-        }*/
-        this.LY = IIRFilter(this.LY, iirFilterCoefficients.a, iirFilterCoefficients.b);
-        this.RY = IIRFilter(this.RY, iirFilterCoefficients.a, iirFilterCoefficients.b);
+        }
 
         int []res1 = VSD(this.LY,Unit,m);
         int []res2 = VSD(this.RY,Unit,m);

@@ -1,4 +1,4 @@
-package cn.edu.nju.cyh.Cricket;
+package cn.edu.nju.cyh.Cricket.Activity;
 
 import android.Manifest;
 import android.content.Intent;
@@ -13,18 +13,21 @@ import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import cn.edu.nju.cyh.Cricket.UI.ChaosCompassView;
+import cn.edu.nju.cyh.Cricket.Core.Filter;
+import cn.edu.nju.cyh.Cricket.R;
+import cn.edu.nju.cyh.Cricket.Core.Tdoa;
 
 public class CompassActivity extends AppCompatActivity {
     /**
@@ -60,10 +63,21 @@ public class CompassActivity extends AppCompatActivity {
      * 传感器
      */
     private SensorManager mSensorManager;
+    private Sensor mGyroscope, mAccelerometer, mMagneticField;
     private SensorEventListener mSensorListener;
 
     private final float temperature = 20.0f;
-    private final float vSpeed = (331.3f + 0.606f * temperature) * 100;
+    private final float vSpeed = (331.3f + 0.606f * temperature) * 100.0f;
+
+    private boolean isMove = false;
+    private final float threshold = 0.1f;
+    private float[] gyroValue = new float[3];
+    private float[] rotation = new float[9];
+    private float[] orientation = new float[3];
+    private float[] accelerometerValues = new float[3];
+    private float[] magneticFieldValues = new float[3];
+
+    private float degree = 90.0f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -87,17 +101,49 @@ public class CompassActivity extends AppCompatActivity {
 
         //传感器注册
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mMagneticField = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mSensorListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
                 switch (event.sensor.getType()){
-                    case Sensor.TYPE_GYROSCOPE :{
-                        val = event.values[0];
-                        chaosCompassView.setVal(val,mdegree);
+                    case Sensor.TYPE_ORIENTATION : {
+                        break;
+                    }
+                    case Sensor.TYPE_GYROSCOPE:{
+                        gyroValue = event.values;
+                        if (!isMove && Math.abs(gyroValue[0]) > threshold){
+                            isMove = true;
+                        } else if (!isMove && Math.abs(gyroValue[1]) > threshold){
+                            isMove = true;
+                        } else if (!isMove && Math.abs(gyroValue[2]) > threshold){
+                            isMove = true;
+                        }else{
+                            isMove = false;
+                        }
+                        if(isMove){
+                            LYList.clear();
+                            RYList.clear();
+                        }
+                        break;
+                    }
+                    case Sensor.TYPE_ACCELEROMETER:{
+                        accelerometerValues = event.values;
+                        break;
+                    }
+                    case Sensor.TYPE_MAGNETIC_FIELD:{
+                        magneticFieldValues = event.values;
                         break;
                     }
                     default:break;
                 }
+                Log.d("sadaa", "onSensorChanged: " + gyroValue[0] + " " + LYList.size());
+                SensorManager.getRotationMatrix(rotation, null, accelerometerValues, magneticFieldValues);
+                SensorManager.getOrientation(rotation, orientation);
+                orientation[0] = (float) Math.toDegrees(orientation[0]);
+                //chaosCompassView.setVal(orientation[0], gyroValue[0] + 90.0f);
+                chaosCompassView.changeVal(orientation[0],degree);
             }
 
             @Override
@@ -106,7 +152,9 @@ public class CompassActivity extends AppCompatActivity {
             }
         };
         //传感器监听
-        mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE), SensorManager.SENSOR_DELAY_GAME);
+        mSensorManager.registerListener(mSensorListener, mGyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(mSensorListener, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(mSensorListener, mMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
 
         //启动录音
         mExecutorService.submit(new Runnable() {
@@ -124,6 +172,7 @@ public class CompassActivity extends AppCompatActivity {
     public void onClick(View view){
         if(view.getId()==R.id.mbutton){
             mIsRecording = false;
+            onDestroy();
             startActivity(new Intent(CompassActivity.this,MainActivity.class));
         }
     }
@@ -156,6 +205,8 @@ public class CompassActivity extends AppCompatActivity {
                 if(read <= 0){
                     return false;
                 }else {
+                    //硬阈值需要根据实际情况设定
+                    //安静室内环境可取消
                     //录音
                     int length = mBuffer.length / 2;
                     index = 0;
@@ -175,6 +226,7 @@ public class CompassActivity extends AppCompatActivity {
                         }
                     }
                 }
+                onlineRecorder();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -259,8 +311,9 @@ public class CompassActivity extends AppCompatActivity {
      * @throws Exception
      */
     private void onlineRecorder() throws Exception{
-        if (!audioRecordEnd()) recorderFail();
-        else{
+        if(!isMove && LYList.size() >= 44100 * 3){
+            //流程简化
+            //1s时间窗->5s计算一次
             int sizeLen = LYList.size();
             double []LYD = new double[sizeLen];
             double []RYD = new double[sizeLen];
@@ -269,7 +322,7 @@ public class CompassActivity extends AppCompatActivity {
                 RYD[i] = RYList.get(i);
             }
             int Unit = 400;int m = 10;
-            Filter offlineFilter = new Filter(LYD,RYD,6,44100.0,4000);
+            Filter offlineFilter = new Filter(LYD,RYD,6,44100.0,990,1010);
             offlineFilter.filter(Unit, m);
             LYD = offlineFilter.getLY();
             RYD = offlineFilter.getRY();
@@ -278,10 +331,26 @@ public class CompassActivity extends AppCompatActivity {
             Log.d("TDOA","delay: " + tdoa.getDeltaT() * 44100);
             Log.d("TDOA","deltaT: " + tdoa.getDeltaT() + "秒");
             Log.d("TDOA","Distance: " + tdoa.getDeltaT() * vSpeed +"cm");
-            Log.d("TDOA","Distance: " + tdoa.getSign());
+            Log.d("TDOA","Sign: " + tdoa.getSign());
+            Log.d("TDOA","Angle: " + Math.toDegrees(Math.atan(tdoa.getDeltaT() * vSpeed /16.0)));
+            LYList.clear();
+            RYList.clear();
+            float sign = 0;
+            if(tdoa.getSign()>0)sign = 1.0f;
+            else if(tdoa.getSign()<0)sign = -1.0f;
+            else sign = 0.0f;
 
-            Log.d("TDOA","Angle: " + Math.abs(tdoa.getSign())*90.0 + " " + Math.toDegrees(Math.atan(tdoa.getDeltaT() * 34000.0 /16.0)));
-            Log.d("TDOA","Angle: " + CompassActivity.mdegree);
+            degree = (float)Math.toDegrees(Math.atan(tdoa.getDeltaT() * vSpeed / 16.0f));
+            if(degree <= 0)degree = -degree + 90.0f;
+            else degree = -degree + 270.0f;
+            chaosCompassView.setVal(orientation[0],degree);
+
+            /*
+            degree = (float)Math.toDegrees(Math.atan(tdoa.getDeltaT() * vSpeed / 16.0f));
+            if(degree >= 0)degree = degree + 90.0f;
+            else degree = degree + 270.0f;
+            chaosCompassView.setVal(orientation[0],degree);
+            */
         }
     }
 
